@@ -1,1 +1,11 @@
 <h1>Profile Page</h1>
+<form>
+    <label>Username: </label><input type="text" ng-model="userprofile.username" placeholder="Username" /><br /><br />
+    <label>Password: </label><input type="password" ng-model="userprofile.password" placeholder="Password"/><br /><br />
+    <label>Firstname: </label><input type="text" ng-model="userprofile.firstname" placeholder="Firstname"/><br /><br />
+    <label>Lastname: </label><input type="text" ng-model="userprofile.lastname" placeholder="Lastname"/><br /><br />
+    <label>Email: </label><input type="text" ng-model="userprofile.email" placeholder="Email"/><br /><br />
+    <label>Phone: </label><input type="text" ng-model="userprofile.phone" placeholder="Phone"/><br /><br />
+    <label>Location: </label><input type="text" ng-model="userprofile.location" placeholder="Location"/><br /><br />
+    <button ng-click="changeProfile()">Submit</button>
+</form>

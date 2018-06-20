@@ -1,0 +1,19 @@
+<h1>User Details Page</h1>
+
+<div>
+    <label>Recipient: </label><img src="{{msg_details.recipient_img}}" width="50px"/>{{msg_details.recipient}}<br /><br />
+    <label>Sender: </label><img src="{{msg_details.sender_img}}" width="50px"/>{{msg_details.sender}}<br /><br />
+    <label>Title: </label>{{msg_details.title}}<br /><br />
+    <label>Description: </label>{{msg_details.description}}<br /><br />
+    <label>Created at: </label>{{msg_details.created_at}}<br /><br />
+    <label>Important: </label>{{msg_details.important}}<br /><br />
+    <label>Reply: </label>{{msg_details.reply}}<br /><br />
+    <button ng-click="reply()">Reply</button>
+    <button ng-click="delete()">Delete</button>
+    <button ng-click="mark()" id="mark">Mark as Important</button><br /><br />
+    <div id="reply" style="display: none">
+        <input type="text" style="width:700px" ng-model="msg"/><br />
+        <button ng-click="submitReply()">Submit</button><br /><br />
+    </div>
+    <button ng-click="back()">Back To Message</button>
+</div>

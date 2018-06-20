@@ -17,13 +17,21 @@ app.config(function ($routeProvider) {
         })
         .when('/profile', {
             templateUrl: 'profile.html',
+            controller: 'profileController',
             resolve: ['authService', function (authService) {
                 return authService.checkUserStatus();
             }]
         })
         .when('/message', {
             templateUrl: 'message.html',
-            // controller: 'userController',
+            controller: 'messageController',
+            resolve: ['authService', function (authService) {
+                return authService.checkUserStatus();
+            }]
+        })
+        .when('/message/:mId', {
+            templateUrl: 'details.html',
+            controller: 'detailController',
             resolve: ['authService', function (authService) {
                 return authService.checkUserStatus();
             }]
@@ -61,7 +69,6 @@ app.controller('loginController', function ($scope, $location, $http, $rootScope
                 if(resp.data.length) {
                     $rootScope.user = resp.data[0];
                     console.log($rootScope.user);
-                    $rootScope.isLoggedIn = resp.data[0].isLoggedin;
                     alert("Login Success");
                     $location.path('/');
                 }
@@ -76,25 +83,19 @@ app.factory('authService', function ($q, $http, $rootScope, $location) {
     return {
         'checkUserStatus': function () {
             var defer = $q.defer();
-            // $http.get(`http://localhost:3000/checkStatus/${$rootScope.user_id}`)
-            //     .then(function (resp) {
-            //         // console.log(resp.data);
-            //         if(resp.data.isLoggedin) {
-            //             console.log("Logged in");
-            //             defer.resolve();
-            //         } else {
-            //             $location.path('/login');
-            //             defer.reject();
-            //         }
-            //     })
-            // return defer.promise;
-            if($rootScope.isLoggedIn){
-                console.log("Logged in");
-                defer.resolve();
-            } else {
-                $location.path('/login');
-                defer.reject();
-            }
+            $http.get(`http://localhost:3000/checkStatus`)
+                .then(function (resp) {
+                    // console.log(resp.data);
+                    if(resp.data.length > 0) {
+                        console.log("Logged in");
+                        $rootScope.user = resp.data[0];
+                        defer.resolve();
+                    } else {
+                        $location.path('/login');
+                        defer.reject();
+                    }
+                });
+            return defer.promise;
         },
         'logout': function () {
             console.log($rootScope.user);
@@ -110,12 +111,88 @@ app.factory('authService', function ($q, $http, $rootScope, $location) {
     }
 });
 
-app.controller('logoutController', function ($scope, $rootScope, $http) {
-    $scope.logout = function () {
-        $rootScope.isLoggedIn = false;
-        $http.get(`http://localhost:3000/deleteFlag?user=${$rootScope.user}`)
+app.controller('profileController', function ($scope, $rootScope, $http, $location) {
+    // $http.get(`http://localhost:3000/checkStatus`)
+    //     .then(function (resp) {
+    //         $scope.userprofile = resp.data[0];
+    //         console.log($scope.userprofile);
+    //     });
+
+    $scope.userprofile = $rootScope.user;
+    $scope.changeProfile = function () {
+        $http.post('http://localhost:3000/updateuser', $scope.userprofile)
             .then(function (resp) {
-                alert('Please Login!')
+                if(resp.data.update) {
+                    alert("Data updated!!");
+                    $location.path('/profile');
+                }
             })
-    }
+    };
+});
+
+app.controller('messageController', function ($scope, $rootScope, $http) {
+    // $http.get(`http://localhost:3000/checkStatus`)
+    //     .then(function (resp) {
+    //         $scope.username = resp.data[0].username;
+    //         console.log($scope.username);
+    //         $http.get(`http://localhost:3000/getmessage?username=${$scope.username}`)
+    //             .then(function (resp) {
+    //                 if(resp.data.length > 0) {
+    //                     $rootScope.messages = resp.data;
+    //                 } else {
+    //                     $rootScope.messages = ""
+    //                 }
+    //             })
+    //     });
+    $scope.username = $rootScope.user.username;
+    $http.get(`http://localhost:3000/getmessage?username=${$scope.username}`)
+        .then(function (resp) {
+            if(resp.data.length > 0) {
+                $scope.messages = resp.data;
+            } else {
+                $scope.messages = ""
+            }
+        })
+});
+
+app.controller('detailController', function ($scope, $rootScope, $routeParams, $location, $http) {
+    $scope.username = $rootScope.user.username;
+    $http.get(`http://localhost:3000/getmessage?username=${$scope.username}`)
+        .then(function (resp) {
+            $scope.messages = resp.data;
+            $scope.msg_details =  $scope.messages[$routeParams.mId];
+            $scope.back = function () {
+                $location.path('/message');
+            };
+            $scope.reply = function () {
+                document.getElementById("reply").style.display="inline";
+            };
+            $scope.submitReply = function () {
+                $scope.msgs = $scope.msg_details.reply ? $scope.msg_details.reply : [];
+                $scope.msgs.push($scope.msg);
+                console.log($scope.msgs);
+                $scope.reply_msg = {
+                    "reply": $scope.msgs
+                };
+                $http.post(`http://localhost:3000/addreply?id=${$scope.msg_details._id}`, $scope.reply_msg)
+                    .then(function (resp) {
+                        console.log(resp)
+                    });
+            };
+            $scope.mark = function () {
+                $http.get(`http://localhost:3000/mark?id=${$scope.msg_details._id}`)
+                    .then(function (resp) {
+                        console.log(resp);
+                        document.getElementById("mark").disabled=true;
+                        $scope.msg_details.important = "important";
+                    })
+            };
+            $scope.delete = function () {
+                $http.get(`http://localhost:3000/deletemsg?id=${$scope.msg_details._id}`)
+                    .then(function (resp) {
+                        alert("Deleted!");
+                        $location.path('/message');
+                    })
+            };
+        })
 });

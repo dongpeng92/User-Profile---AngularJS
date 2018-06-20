@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var cors = require('cors');
 
 var mongodb = require('mongodb').MongoClient;
+var mongo = require('mongodb');
 var ObjectId = require('mongodb').ObjectId;
 const mongo_conn = 'mongodb://localhost/';
 var db = '';
@@ -47,23 +48,23 @@ app.get('/finduser', function (req, res) {
             db.collection('users').update(myquery, newvalues, function (err) {
                 console.log("updated!!")
             });
+            docs[0].isLoggedin = true;
             console.log(docs);
             res.send(docs);
         }
     })
 });
 
-// app.get('/checkStatus/:uid', function (req, res) {
-//     console.log(ObjectId(req.params.uid));
-//     var myquery = {"_id": ObjectId("${req.params.uid}")};
-//     db.collection('users').find(myquery).toArray(function (err, doc) {
-//         if(!err) {
-//             console.log("find");
-//             console.log(doc);
-//             res.send(doc);
-//         }
-//     })
-// });
+app.get('/checkStatus', function (req, res) {
+    var myquery = {"isLoggedin": true };
+    db.collection('users').find(myquery).toArray(function (err, docs) {
+        if(!err) {
+            console.log("find user");
+            console.log(docs);
+            res.send(docs);
+        }
+    })
+});
 
 app.get('/deleteFlag', function (req, res) {
     console.log(req.query.user);
@@ -73,4 +74,52 @@ app.get('/deleteFlag', function (req, res) {
     res.send({
         isLoggedin: false
     })
+});
+
+app.post('/updateuser', function (req, res) {
+    console.log(req.body);
+    var newvalues = { $set: {"username": req.body.username, "password": req.body.password, "firstname": req.body.firstname,
+                "lastname": req.body.lastname, "email": req.body.email, "phone": req.body.phone, "location": req.body.location} };
+    db.collection('users').update({"isLoggedin": true}, newvalues, function (err) {
+        console.log("updated user info!!")
+        res.send({
+            update: true
+        });
+    });
+});
+
+app.get('/getmessage', function (req, res) {
+    console.log(req.query.username);
+    var myquery = {"recipient": req.query.username };
+    db.collection('message').find(myquery).toArray(function (err, docs) {
+        if(!err) {
+            console.log("find message");
+            console.log(docs);
+            res.send(docs);
+        }
+    })
+});
+
+app.post('/addreply', function (req, res) {
+    console.log(req.body);
+    console.log(req.query.id);
+    db.collection('message').update({"_id": req.query.id}, {$set: req.body}, function (err) {
+        res.send("Reply added!")
+    });
+});
+
+app.get('/mark', function (req, res) {
+    console.log(req.query.id);
+    var o_id = new mongo.ObjectID(req.query.id);
+    console.log(o_id);
+    db.collection('message').update({"_id": o_id}, {$set: {"important": "important"}}, function (err) {
+        res.send("Marked!")
+    });
+});
+
+app.get('/deletemsg', function (req, res) {
+    var o_id = new mongo.ObjectID(req.query.id);
+    db.collection('message').remove({"_id": o_id}, function (err) {
+        res.send("Deleted!");
+    });
 });

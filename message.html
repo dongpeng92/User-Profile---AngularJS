@@ -1,1 +1,13 @@
 <h1>Message Page</h1>
+<table border="1" >
+    <tr>
+        <th>Index</th>
+        <th>Title</th>
+        <th></th>
+    </tr>
+    <tr ng-repeat="message in messages track by $index">
+        <td>{{$index}}</td>
+        <td>{{message.title}}</td>
+        <td><button><a href="#/message/{{$index}}">View More</a></button></td>
+    </tr>
+</table>
