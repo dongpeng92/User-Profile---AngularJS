@@ -179,6 +179,10 @@ app.controller('detailController', function ($scope, $rootScope, $routeParams, $
                         console.log(resp)
                     });
             };
+            console.log($scope.msg_details.important);
+            if($scope.msg_details.important == "important"){
+                document.getElementById("mark").disabled=true;
+            }
             $scope.mark = function () {
                 $http.get(`http://localhost:3000/mark?id=${$scope.msg_details._id}`)
                     .then(function (resp) {

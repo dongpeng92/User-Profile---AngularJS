@@ -103,7 +103,8 @@ app.get('/getmessage', function (req, res) {
 app.post('/addreply', function (req, res) {
     console.log(req.body);
     console.log(req.query.id);
-    db.collection('message').update({"_id": req.query.id}, {$set: req.body}, function (err) {
+    var o_id = new mongo.ObjectID(req.query.id);
+    db.collection('message').update({"_id": o_id}, {$set: req.body}, function (err) {
         res.send("Reply added!")
     });
 });
