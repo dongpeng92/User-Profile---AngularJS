@@ -66,9 +66,7 @@ app.controller('loginController', function ($scope, $location, $http, $rootScope
         var username = $scope.auth.username;
         $http.get(`http://localhost:3000/finduser?username=${username}&password=${$scope.auth.password}`)
             .then(function (resp) {
-                if(resp.data.length) {
-                    $rootScope.user = resp.data[0];
-                    console.log($rootScope.user);
+                if(resp.data) {
                     alert("Login Success");
                     $location.path('/');
                 }
@@ -88,7 +86,9 @@ app.factory('authService', function ($q, $http, $rootScope, $location) {
                     // console.log(resp.data);
                     if(resp.data.length > 0) {
                         console.log("Logged in");
+                        document.getElementById('nav').style.display='inline';
                         $rootScope.user = resp.data[0];
+                        console.log($rootScope.user);
                         defer.resolve();
                     } else {
                         $location.path('/login');
@@ -99,11 +99,11 @@ app.factory('authService', function ($q, $http, $rootScope, $location) {
         },
         'logout': function () {
             console.log($rootScope.user);
-            $http.get(`http://localhost:3000/deleteFlag?user=${$rootScope.user}`)
+            $http.get(`http://localhost:3000/deleteFlag?id=${$rootScope.user._id}`)
                 .then(function (resp) {
                     if(!resp.data.isLoggedin){
-                        $rootScope.isLoggedIn = false;
                         alert('Please Login!');
+                        document.getElementById('nav').style.display='none';
                         $location.path('/');
                     }
                 })
@@ -131,19 +131,6 @@ app.controller('profileController', function ($scope, $rootScope, $http, $locati
 });
 
 app.controller('messageController', function ($scope, $rootScope, $http) {
-    // $http.get(`http://localhost:3000/checkStatus`)
-    //     .then(function (resp) {
-    //         $scope.username = resp.data[0].username;
-    //         console.log($scope.username);
-    //         $http.get(`http://localhost:3000/getmessage?username=${$scope.username}`)
-    //             .then(function (resp) {
-    //                 if(resp.data.length > 0) {
-    //                     $rootScope.messages = resp.data;
-    //                 } else {
-    //                     $rootScope.messages = ""
-    //                 }
-    //             })
-    //     });
     $scope.username = $rootScope.user.username;
     $http.get(`http://localhost:3000/getmessage?username=${$scope.username}`)
         .then(function (resp) {
